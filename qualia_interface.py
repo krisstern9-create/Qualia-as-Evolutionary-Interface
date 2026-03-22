@@ -63,10 +63,18 @@ class Outcome:
 class QualiaInterface:
     """Основной интерфейс для работы с квалиа."""
     
-    def __init__(self, learning_rate: float = 0.1, memory_capacity: int = 1000):
+    def __init__(self, learning_rate: float = 0.1, memory_capacity: int = 1000, memory_influence_enabled: bool = True):
+        """
+        Инициализация интерфейса квалиа.
+        
+        Args:
+            learning_rate: Скорость обучения (0.0 - 1.0)
+            memory_capacity: Максимальный размер памяти
+            memory_influence_enabled: Включено ли влияние памяти на новые квалиа
+        """
         self.memory: List[Qualia] = []
         self.feedback_history: List[Outcome] = []
-        self.memory_influence_enabled: bool = True
+        self.memory_influence_enabled: bool = memory_influence_enabled
         self.learning_rate: float = learning_rate
         self.memory_capacity: int = memory_capacity
         self.adaptation_state: Dict[str, float] = defaultdict(float)
