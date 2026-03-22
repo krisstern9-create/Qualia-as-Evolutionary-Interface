@@ -1,0 +1,15 @@
+# Qualia-as-Evolutionary-Interface
+# Зависимости для функциональной модели квалиа
+
+# Тестирование
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Научные вычисления
+numpy>=1.24.0
+
+# Типизация (опционально)
+typing-extensions>=4.8.0
+
+# Утилиты
+python-dotenv>=1.0.0
