@@ -3,6 +3,11 @@ import time
 import numpy as np
 from pathlib import Path
 
+# Импорт из правильных модулей
+from qualia_interface import QualiaInterface, Qualia, Behavior, Outcome
+from qualia_metrics import QualiaMetrics
+
+
 class TestQualiaInterface:
     """
     Тесты для проверки функциональной модели квалиа.
@@ -21,8 +26,6 @@ class TestQualiaInterface:
         - Квалиа имеет измеримые параметры
         - Разные стимулы создают разные квалиа
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
         # Стимул 1: положительный (еда)
@@ -51,25 +54,25 @@ class TestQualiaInterface:
         assert qualia_food is not None
         assert qualia_pain is not None
         
-        # Проверка 2: Квалиа имеет структуру
-        assert 'id' in qualia_food
-        assert 'timestamp' in qualia_food
-        assert 'intensity' in qualia_food
-        assert 'valence' in qualia_food
-        assert 'content' in qualia_food
+        # Проверка 2: Квалиа имеет структуру (используем атрибуты dataclass!)
+        assert hasattr(qualia_food, 'id')
+        assert hasattr(qualia_food, 'timestamp')
+        assert hasattr(qualia_food, 'intensity')
+        assert hasattr(qualia_food, 'valence')
+        assert hasattr(qualia_food, 'content')
         
         # Проверка 3: Разные стимулы = разные квалиа
-        assert qualia_food['id'] != qualia_pain['id']
-        assert qualia_food['valence'] != qualia_pain['valence']
-        assert qualia_food['intensity'] != qualia_pain['intensity']
+        assert qualia_food.id != qualia_pain.id
+        assert qualia_food.valence != qualia_pain.valence
+        assert qualia_food.intensity != qualia_pain.intensity
         
         # Проверка 4: Интенсивность коррелирует со стимулом
-        assert qualia_food['intensity'] > 0.5
-        assert qualia_pain['intensity'] > 0.5
+        assert qualia_food.intensity > 0.5
+        assert qualia_pain.intensity > 0.5
         
         print(f"✓ Тест 1 пройден: Квалиа сгенерировано успешно")
-        print(f"  Food qualia: {qualia_food['id'][:8]}... valence={qualia_food['valence']}")
-        print(f"  Pain qualia: {qualia_pain['id'][:8]}... valence={qualia_pain['valence']}")
+        print(f"  Food qualia: {qualia_food.id[:8]}... valence={qualia_food.valence}")
+        print(f"  Pain qualia: {qualia_pain.id[:8]}... valence={qualia_pain.valence}")
     
     def test_behavior_generation_from_qualia(self):
         """
@@ -80,26 +83,26 @@ class TestQualiaInterface:
         - Поведение соответствует валентности квалиа
         - Есть вариативность в поведении
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
-        # Создаём квалиа
-        qualia_positive = {
-            'id': 'q_pos_001',
-            'timestamp': time.time(),
-            'intensity': 0.8,
-            'valence': 'positive',
-            'content': {'modality': 'taste', 'quality': 'sweet'}
-        }
+        # Создаём квалиа как dataclass (НЕ dict!)
+        qualia_positive = Qualia(
+            id='q_pos_001',
+            timestamp=time.time(),
+            intensity=0.8,
+            valence='positive',
+            content={'modality': 'taste', 'quality': 'sweet'},
+            modality='taste'
+        )
         
-        qualia_negative = {
-            'id': 'q_neg_001',
-            'timestamp': time.time(),
-            'intensity': 0.9,
-            'valence': 'negative',
-            'content': {'modality': 'touch', 'quality': 'pain'}
-        }
+        qualia_negative = Qualia(
+            id='q_neg_001',
+            timestamp=time.time(),
+            intensity=0.9,
+            valence='negative',
+            content={'modality': 'touch', 'quality': 'pain'},
+            modality='touch'
+        )
         
         # Генерируем поведение
         behavior_pos = qi.generate_behavior(qualia_positive)
@@ -110,23 +113,21 @@ class TestQualiaInterface:
         assert behavior_neg is not None
         
         # Проверка 2: Поведение имеет структуру
-        assert 'action' in behavior_pos
-        assert 'direction' in behavior_pos
-        assert 'magnitude' in behavior_pos
+        assert hasattr(behavior_pos, 'action')
+        assert hasattr(behavior_pos, 'direction')
+        assert hasattr(behavior_pos, 'magnitude')
         
         # Проверка 3: Поведение соответствует валентности
-        # Положительное → приближение
-        # Отрицательное → избегание
-        assert behavior_pos['direction'] == 'approach'
-        assert behavior_neg['direction'] == 'avoid'
+        assert behavior_pos.direction == 'approach'
+        assert behavior_neg.direction == 'avoid'
         
         # Проверка 4: Magnitude коррелирует с интенсивностью
-        assert behavior_pos['magnitude'] > 0
-        assert behavior_neg['magnitude'] > 0
+        assert behavior_pos.magnitude > 0
+        assert behavior_neg.magnitude > 0
         
         print(f"✓ Тест 2 пройден: Поведение сгенерировано успешно")
-        print(f"  Positive: {behavior_pos['action']} → {behavior_pos['direction']}")
-        print(f"  Negative: {behavior_neg['action']} → {behavior_neg['direction']}")
+        print(f"  Positive: {behavior_pos.action} → {behavior_pos.direction}")
+        print(f"  Negative: {behavior_neg.action} → {behavior_neg.direction}")
     
     def test_evolutionary_feedback_loop(self):
         """
@@ -137,8 +138,6 @@ class TestQualiaInterface:
         - Обратная связь влияет на будущие решения
         - Есть адаптация со временем
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
         # Симуляция 10 циклов
@@ -161,9 +160,9 @@ class TestQualiaInterface:
             results.append({
                 'cycle': i,
                 'stimulus_valence': stimulus['valence'],
-                'behavior_direction': behavior['direction'],
-                'outcome': outcome['success'],
-                'feedback_strength': outcome['feedback_strength']
+                'behavior_direction': behavior.direction,  # Атрибут, не словарь!
+                'outcome': outcome.success,  # Атрибут!
+                'feedback_strength': outcome.feedback_strength
             })
         
         # Проверка 1: Все циклы завершены
@@ -197,8 +196,6 @@ class TestQualiaInterface:
         - Одинаковые стимулы создают похожие но не идентичные квалиа
         - Есть контекстуальная зависимость
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
         # Одинаковый стимул 5 раз
@@ -212,16 +209,16 @@ class TestQualiaInterface:
         
         qualias = [qi.generate_qualia(stimulus) for _ in range(5)]
         
-        # Проверка 1: Все ID уникальны
-        ids = [q['id'] for q in qualias]
+        # Проверка 1: Все ID уникальны (используем .id вместо ['id'])
+        ids = [q.id for q in qualias]
         assert len(set(ids)) == 5
         
         # Проверка 2: Timestamps разные
-        timestamps = [q['timestamp'] for q in qualias]
+        timestamps = [q.timestamp for q in qualias]
         assert len(set(timestamps)) == 5
         
         # Проверка 3: Содержание похожее (в пределах допуска)
-        intensities = [q['intensity'] for q in qualias]
+        intensities = [q.intensity for q in qualias]
         intensity_variance = np.var(intensities)
         assert intensity_variance < 0.1  # Маленькая вариация
         
@@ -238,8 +235,6 @@ class TestQualiaInterface:
         - Прошлые квалиа влияют на новые
         - Есть поиск по ассоциациям
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
         # Создаём серию квалиа
@@ -270,7 +265,8 @@ class TestQualiaInterface:
             'data': {'color': 'red'}
         }
         new_qualia = qi.generate_qualia(new_stimulus)
-        assert 'memory_influence' in new_qualia or qi.memory_influence_enabled
+        # Проверяем через hasattr или флаг
+        assert hasattr(new_qualia, 'memory_influence') or qi.memory_influence_enabled
         
         print(f"✓ Тест 5 пройден: Интеграция с памятью работает")
         print(f"  Записей в памяти: {len(qi.memory)}")
@@ -285,8 +281,6 @@ class TestQualiaInterface:
         - Система обучается на протяжении цикла
         - Измеримые изменения в поведении
         """
-        from qualia_interface import QualiaInterface
-        
         qi = QualiaInterface()
         
         # 50 циклов эволюции
@@ -307,9 +301,9 @@ class TestQualiaInterface:
             
             evolution_data.append({
                 'cycle': cycle,
-                'outcome_success': outcome['success'],
-                'feedback_strength': outcome['feedback_strength'],
-                'behavior_magnitude': behavior['magnitude']
+                'outcome_success': outcome.success,  # Атрибут!
+                'feedback_strength': outcome.feedback_strength,
+                'behavior_magnitude': behavior.magnitude  # Атрибут!
             })
         
         # Проверка 1: Все циклы завершены
@@ -348,8 +342,6 @@ class TestQualiaMetrics:
     
     def test_qualia_intensity_measurement(self):
         """Тест 7: Измерение интенсивности квалиа."""
-        from qualia_interface import QualiaInterface, QualiaMetrics
-        
         qi = QualiaInterface()
         stimulus = {
             'type': 'sensory',
@@ -360,7 +352,7 @@ class TestQualiaMetrics:
         }
         
         qualia = qi.generate_qualia(stimulus)
-        metrics = QualiaMetrics.calculate(qualia)
+        metrics = QualiaMetrics.calculate(qualia)  # Из qualia_metrics!
         
         assert 'intensity' in metrics
         assert metrics['intensity'] > 0
@@ -370,8 +362,6 @@ class TestQualiaMetrics:
     
     def test_qualia_valence_measurement(self):
         """Тест 8: Измерение валентности квалиа."""
-        from qualia_interface import QualiaInterface, QualiaMetrics
-        
         qi = QualiaInterface()
         
         qualia_pos = qi.generate_qualia({
@@ -402,8 +392,6 @@ class TestQualiaMetrics:
     
     def test_qualia_complexity_measurement(self):
         """Тест 9: Измерение сложности квалиа."""
-        from qualia_interface import QualiaInterface, QualiaMetrics
-        
         qi = QualiaInterface()
         
         # Простое квалиа
