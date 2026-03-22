@@ -94,19 +94,19 @@ def demo_behavior_generation():
     
     qi = QualiaInterface()
     
-    # Положительное квалиа
-    qualia_positive = {
-        'id': 'demo_pos_001',
-        'timestamp': time.time(),
-        'intensity': 0.8,
-        'valence': 'positive',
-        'content': {'modality': 'visual', 'quality': 'beautiful'},
-        'modality': 'visual'
-    }
+    # Исправлено: Создаём Qualia как dataclass, НЕ dict!
+    qualia_positive = Qualia(
+        id='demo_pos_001',
+        timestamp=time.time(),
+        intensity=0.8,
+        valence='positive',
+        content={'modality': 'visual', 'quality': 'beautiful'},
+        modality='visual'
+    )
     
     print("\n🧠 КВАЛИА: Положительное (визуальное)")
-    print(f"  Валентность: {qualia_positive['valence']}")
-    print(f"  Интенсивность: {qualia_positive['intensity']}")
+    print(f"  Валентность: {qualia_positive.valence}")
+    print(f"  Интенсивность: {qualia_positive.intensity}")
     
     # Генерация поведения
     behavior = qi.generate_behavior(qualia_positive)
@@ -117,18 +117,18 @@ def demo_behavior_generation():
     print(f"  Магнитуда: {behavior.magnitude:.4f}")
     
     # Отрицательное квалиа
-    qualia_negative = {
-        'id': 'demo_neg_001',
-        'timestamp': time.time(),
-        'intensity': 0.9,
-        'valence': 'negative',
-        'content': {'modality': 'auditory', 'quality': 'loud_noise'},
-        'modality': 'auditory'
-    }
+    qualia_negative = Qualia(
+        id='demo_neg_001',
+        timestamp=time.time(),
+        intensity=0.9,
+        valence='negative',
+        content={'modality': 'auditory', 'quality': 'loud_noise'},
+        modality='auditory'
+    )
     
     print("\n🧠 КВАЛИА: Отрицательное (аудиальное)")
-    print(f"  Валентность: {qualia_negative['valence']}")
-    print(f"  Интенсивность: {qualia_negative['intensity']}")
+    print(f"  Валентность: {qualia_negative.valence}")
+    print(f"  Интенсивность: {qualia_negative.intensity}")
     
     behavior_neg = qi.generate_behavior(qualia_negative)
     
