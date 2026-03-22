@@ -157,11 +157,14 @@ class TestQualiaInterface:
             # Симуляция исхода (успех/неуспех)
             outcome = qi.evaluate_outcome(behavior, stimulus)
             
+            # ←←← КРИТИЧЕСКИ ВАЖНО: Применяем обратную связь!
+            qi.apply_feedback(outcome)
+            
             results.append({
                 'cycle': i,
                 'stimulus_valence': stimulus['valence'],
-                'behavior_direction': behavior.direction,  # Атрибут, не словарь!
-                'outcome': outcome.success,  # Атрибут!
+                'behavior_direction': behavior.direction,
+                'outcome': outcome.success,
                 'feedback_strength': outcome.feedback_strength
             })
         
@@ -301,9 +304,9 @@ class TestQualiaInterface:
             
             evolution_data.append({
                 'cycle': cycle,
-                'outcome_success': outcome.success,  # Атрибут!
+                'outcome_success': outcome.success,
                 'feedback_strength': outcome.feedback_strength,
-                'behavior_magnitude': behavior.magnitude  # Атрибут!
+                'behavior_magnitude': behavior.magnitude
             })
         
         # Проверка 1: Все циклы завершены
@@ -352,7 +355,7 @@ class TestQualiaMetrics:
         }
         
         qualia = qi.generate_qualia(stimulus)
-        metrics = QualiaMetrics.calculate(qualia)  # Из qualia_metrics!
+        metrics = QualiaMetrics.calculate(qualia)
         
         assert 'intensity' in metrics
         assert metrics['intensity'] > 0
