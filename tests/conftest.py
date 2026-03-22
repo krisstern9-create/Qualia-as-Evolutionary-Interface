@@ -10,6 +10,7 @@ Conftest для pytest.
 
 import sys
 import os
+import pytest
 from pathlib import Path
 
 
